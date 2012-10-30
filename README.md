@@ -1,10 +1,13 @@
 DarkSlider
 ==========
 
-1. Put dadad
+Usage
+-----
 
-put ds-el-wrap around your sliding elements
+Add div with "ds-stuff-wrap" class around your sliding stuff
 
-then put ds-el around each element + id="something{{ loop.index }}"
+Add div with "ds-stuff" class and "loop.index" id around each slides
 
-put ds-thumbs on your hrefs + data-id="{{ loop.index }}"
+Add div with "ds-thumb-wrap" class around your thumbs
+
+Add div with "ds-thumb" class and "loop.index" data-id around each slides
