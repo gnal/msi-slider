@@ -16,7 +16,7 @@
 
         this.init();
         this.listen();
-    }
+    };
 
     DarkSlider.prototype = {
         init: function() {
@@ -85,11 +85,11 @@
             $el.removeClass('active').css('z-index', 9);
             return $el;
         }
-    }
+    };
 
     $.fn.darkslider = function(options) {
         var darkslider = new DarkSlider(this, options);
-    }
+    };
 
     $(window).on('load', function() {
         $('#slider').darkslider();
