@@ -1,0 +1,11 @@
+.ds-el-wrap {
+    position: relative;
+    width: 720px;
+    height: 335px;
+}
+
+.ds-el {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
