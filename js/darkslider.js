@@ -6,10 +6,10 @@
         this.$el = el;
         this.options = options;
 
-        this.$elWrap = this.$el.find('.ds-el-wrap');
+        this.$stuffWrap = this.$el.find('.ds-stuff-wrap');
         this.$thumbWrap = this.$el.find('.ds-thumb-wrap');
 
-        this.$activeEl = this.$elWrap.find('.ds-el').eq(0);
+        this.$activeStuff = this.$stuffWrap.find('.ds-stuff').eq(0);
         this.$activeThumb = this.$thumbWrap.find('.ds-thumb').eq(0);
 
         this.ready = true;
@@ -22,7 +22,7 @@
         init: function() {
             var self = this;
 
-            self.enableEl(self.$activeEl);
+            self.enableStuff(self.$activeStuff);
             self.enableThumb(self.$activeThumb);
         },
 
@@ -40,22 +40,22 @@
         {
             var self = this,
                 newId = 'photo'+$thumb.data('id'),
-                $oldEl = self.$activeEl,
-                $newEl = self.$el.find('#'+newId);
+                $oldStuff = self.$activeStuff,
+                $newStuff = self.$el.find('#'+newId);
 
-            if (self.ready === false || $oldEl.attr('id') === newId) return; // anti-spam
+            if (self.ready === false || $oldStuff.attr('id') === newId) return; // anti-spam
 
             self.ready = false;
 
             self.disableThumb(self.$activeThumb);
             self.enableThumb($thumb);
 
-            self.disableEl(self.$activeEl);
-            self.enableEl($newEl);
+            self.disableStuff(self.$activeStuff);
+            self.enableStuff($newStuff);
 
             // pourquoi le newlement ne fade pas In wtf is wrong with this shit?
-            $newEl.fadeIn(300, function() {
-                $oldEl.fadeOut(1);
+            $newStuff.fadeIn(300, function() {
+                $oldStuff.fadeOut(1);
                 self.ready = true;
             });
         },
@@ -73,17 +73,17 @@
             return $thumb;
         },
 
-        enableEl: function($el)
+        enableStuff: function($stuff)
         {
-            $el.addClass('active').css('z-index', 999);
-            this.$activeEl = $el;
-            return $el;
+            $stuff.addClass('active').css('z-index', 999);
+            this.$activeStuff = $stuff;
+            return $stuff;
         },
 
-        disableEl: function($el)
+        disableStuff: function($stuff)
         {
-            $el.removeClass('active').css('z-index', 9);
-            return $el;
+            $stuff.removeClass('active').css('z-index', 9);
+            return $stuff;
         }
     };
 

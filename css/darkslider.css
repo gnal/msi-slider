@@ -1,10 +1,10 @@
-.ds-el-wrap {
+.ds-stuff-wrap {
     position: relative;
     width: 720px;
     height: 335px;
 }
 
-.ds-el {
+.ds-stuff {
     position: absolute;
     left: 0;
     top: 0;
