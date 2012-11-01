@@ -13,6 +13,7 @@
         this.$activeThumb = this.$thumbWrap.find('.ds-thumb').eq(0);
 
         this.ready = true;
+        this.paused = false;
 
         this.init();
         this.listen();
@@ -24,6 +25,16 @@
 
             self.enableStuff(self.$activeStuff);
             self.enableThumb(self.$activeThumb);
+
+            setInterval(function() {
+                if (!self.paused) {
+                    if (self.$activeThumb.next().length > 0) {
+                        self.show(self.$activeThumb.next());
+                    } else {
+                        self.show(self.$thumbWrap.find('.ds-thumb').eq(0));
+                    }
+                }
+            }, 5000)
         },
 
         listen: function()
@@ -34,6 +45,14 @@
                 self.show($(this));
                 e.preventDefault();
             });
+
+            self.$el.on('mouseenter', function(e) {
+                self.paused = true;
+            });
+
+            self.$el.on('mouseleave', function(e) {
+                self.paused = false;
+            });
         },
 
         show: function($thumb)
@@ -43,7 +62,9 @@
                 $oldStuff = self.$activeStuff,
                 $newStuff = self.$el.find('#'+newId);
 
-            if (self.ready === false || $oldStuff.attr('id') === newId) return; // anti-spam
+            if (self.ready === false || $oldStuff.attr('id') === newId) {
+                return;
+            }
 
             self.ready = false;
 
@@ -53,9 +74,12 @@
             self.disableStuff(self.$activeStuff);
             self.enableStuff($newStuff);
 
-            // pourquoi le newlement ne fade pas In wtf is wrong with this shit?
-            $newStuff.fadeIn(300, function() {
+            $newStuff.fadeIn(200, function() {
                 $oldStuff.fadeOut(1);
+                $oldStuff.find('.text-container').fadeOut(1);
+
+                $newStuff.find('.text-container').effect('slide', {mode: 'show', easing: 'easeOutBounce'}, 1500);
+
                 self.ready = true;
             });
         },
@@ -64,12 +88,14 @@
         {
             $thumb.addClass('active');
             this.$activeThumb = $thumb;
+
             return $thumb;
         },
 
         disableThumb: function($thumb)
         {
             $thumb.removeClass('active');
+
             return $thumb;
         },
 
@@ -77,12 +103,14 @@
         {
             $stuff.addClass('active').css('z-index', 999);
             this.$activeStuff = $stuff;
+
             return $stuff;
         },
 
         disableStuff: function($stuff)
         {
             $stuff.removeClass('active').css('z-index', 9);
+
             return $stuff;
         }
     };
