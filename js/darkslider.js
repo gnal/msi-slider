@@ -123,3 +123,70 @@
         $('#slider').darkslider();
     });
 })(jQuery);
+
+(function($) {
+    "use strict";
+
+    var DarkCarousel = function(el, options)
+    {
+        this.$el = el;
+        this.options = options;
+
+
+
+        this.ready = true;
+        this.paused = false;
+
+        this.init();
+        this.listen();
+    };
+
+    DarkCarousel.prototype = {
+        init: function() {
+            var self = this;
+
+
+        },
+
+        listen: function()
+        {
+            var self = this;
+
+
+        },
+
+        slide: function(direction)
+        {
+            var self = this,
+                $first = self.$thumbsWrap.find('li').first(),
+                $last = self.$thumbsWrap.find('li').last();
+
+            if (self.carouselRdy === false) return; // anti button spamming
+
+            self.carouselRdy = false;
+            self.carouselRunning = true;
+
+            if (direction === 'next') {
+                self.$thumbsWrap.animate({'left': '-'+self.imgWidth}, function() {
+                    var $thumb = self.$current.parent().next().children();
+                    $first.insertAfter($last);
+                    self.slideCallback($thumb);
+                });
+            } else {
+                self.$thumbsWrap.animate({'left': '+'+self.imgWidth}, function() {
+                    $last.insertBefore($first);
+                    var $thumb = self.$current.parent().prev().children();
+                    self.slideCallback($thumb);
+                });
+            }
+        }
+    };
+
+    $.fn.darkcarousel = function(options) {
+        var darkcarousel = new DarkCarousel(this, options);
+    };
+
+    $(window).on('load', function() {
+        $('#carousel').darkcarousel();
+    });
+})(jQuery);
