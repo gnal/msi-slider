@@ -1,7 +1,9 @@
+// Slider
+
 (function($) {
     "use strict";
 
-    var DarkSlider = function(el, options)
+    var Slider = function(el, options)
     {
         this.$el = el;
         this.options = options;
@@ -19,7 +21,7 @@
         this.listen();
     };
 
-    DarkSlider.prototype = {
+    Slider.prototype = {
         init: function() {
             var self = this;
 
@@ -115,12 +117,12 @@
         }
     };
 
-    $.fn.darkslider = function(options) {
-        var darkslider = new DarkSlider(this, options);
+    $.fn.slider = function(options) {
+        var slider = new Slider(this, options);
     };
 
     $(window).on('load', function() {
-        $('#slider').darkslider();
+        $('#slider').slider();
     });
 })(jQuery);
 

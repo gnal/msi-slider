@@ -1,4 +1,4 @@
-DarkSlider
+Msi jQuery Toolbox
 ==========
 
 Usage
