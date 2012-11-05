@@ -120,45 +120,37 @@
     $.fn.slider = function(options) {
         var slider = new Slider(this, options);
     };
-
-    $(window).on('load', function() {
-        $('#slider').slider();
-    });
 })(jQuery);
 
 // Carousel
 
-(function($) {
+(function($, window, document) {
     "use strict";
 
-    var MsiCarousel = function(el, options)
-    {
-        this.$el = el;
-        this.options = options;
-
-        this.$ul = this.$el.find('ul');
-
-        this.$li = this.$ul.children('li').first();
-        this.liWidth = this.$li.width() + this.$li.outerWidth(true) - this.$li.innerWidth();
-
-        this.ready = true;
-        this.paused = false;
-
-        this.init();
-        this.listen();
-    };
-
-    MsiCarousel.prototype = {
-        init: function() {
+    var Carousel = {
+        init: function(el, options) {
             var self = this;
 
-            self.$ul.css('width', this.liWidth * self.$ul.children('li').length);
+            self.$el = $(el);
+            self.options = $.extend({}, $.fn.msicarousel.options, options);
+
+            self.$ul = self.$el.find('ul');
+
+            self.$li = self.$ul.children('li').first();
+            self.liWidth = self.$li.width() + self.$li.outerWidth(true) - self.$li.innerWidth();
+
+            self.ready = true;
+            self.paused = false;
+
+            self.$ul.css('width', self.liWidth * self.$ul.children('li').length);
 
             setInterval(function() {
-                if (!self.paused) {
+                if (!self.options.pauseOnHover || !self.paused) {
                     self.slide();
                 }
-            }, 5000)
+            }, self.options.pauseTime);
+
+            self.listen();
         },
 
         listen: function()
@@ -170,11 +162,11 @@
                 e.preventDefault();
             });
 
-            self.$el.on('mouseenter', function(e) {
+            self.$el.on('mouseenter', function() {
                 self.paused = true;
             });
 
-            self.$el.on('mouseleave', function(e) {
+            self.$el.on('mouseleave', function() {
                 self.paused = false;
             });
         },
@@ -208,12 +200,14 @@
     };
 
     $.fn.msicarousel = function(options) {
-        $.each(this, function(i, e) {
-            var msicarousel = new MsiCarousel($(e), options);
+        return this.each(function() {
+            var carousel = Object.create(Carousel);
+            carousel.init(this, options);
         });
     };
 
-    $(window).on('load', function() {
-        $('.msicarousel').msicarousel();
-    });
-})(jQuery);
+    $.fn.msicarousel.options = {
+        pauseTime: 1000,
+        pauseOnHover: true
+    };
+})(jQuery, window, document);
