@@ -127,12 +127,15 @@
 (function($) {
     "use strict";
 
-    var DarkCarousel = function(el, options)
+    var MsiCarousel = function(el, options)
     {
         this.$el = el;
         this.options = options;
 
+        this.$ul = this.$el.find('ul');
 
+        this.$li = this.$ul.children('li').first();
+        this.liWidth = this.$li.width() + this.$li.outerWidth(true) - this.$li.innerWidth();
 
         this.ready = true;
         this.paused = false;
@@ -141,52 +144,72 @@
         this.listen();
     };
 
-    DarkCarousel.prototype = {
+    MsiCarousel.prototype = {
         init: function() {
             var self = this;
 
+            self.$ul.css('width', this.liWidth * self.$ul.children('li').length);
 
+            setInterval(function() {
+                if (!self.paused) {
+                    self.slide();
+                }
+            }, 5000)
         },
 
         listen: function()
         {
             var self = this;
 
+            self.$el.on('click', '.control', function(e) {
+                self.slide($(this));
+                e.preventDefault();
+            });
 
+            self.$el.on('mouseenter', function(e) {
+                self.paused = true;
+            });
+
+            self.$el.on('mouseleave', function(e) {
+                self.paused = false;
+            });
         },
 
-        slide: function(direction)
+        slide: function($control)
         {
             var self = this,
-                $first = self.$thumbsWrap.find('li').first(),
-                $last = self.$thumbsWrap.find('li').last();
+                $first = self.$ul.children('li').first(),
+                $last = self.$ul.children('li').last();
 
-            if (self.carouselRdy === false) return; // anti button spamming
+            if (self.ready === false) {
+                return;
+            }
 
-            self.carouselRdy = false;
-            self.carouselRunning = true;
+            self.ready = false;
 
-            if (direction === 'next') {
-                self.$thumbsWrap.animate({'left': '-'+self.imgWidth}, function() {
-                    var $thumb = self.$current.parent().next().children();
+            if ('undefined' === typeof $control || $control.hasClass('control-next')) {
+                self.$ul.animate({'left': '-'+self.liWidth * 2}, function() {
                     $first.insertAfter($last);
-                    self.slideCallback($thumb);
+                    self.$ul.css('left', -self.liWidth);
+                    self.ready = true;
                 });
             } else {
-                self.$thumbsWrap.animate({'left': '+'+self.imgWidth}, function() {
+                self.$ul.animate({'left': 0}, function() {
                     $last.insertBefore($first);
-                    var $thumb = self.$current.parent().prev().children();
-                    self.slideCallback($thumb);
+                    self.$ul.css('left', -self.liWidth);
+                    self.ready = true;
                 });
             }
         }
     };
 
-    $.fn.darkcarousel = function(options) {
-        var darkcarousel = new DarkCarousel(this, options);
+    $.fn.msicarousel = function(options) {
+        $.each(this, function(i, e) {
+            var msicarousel = new MsiCarousel($(e), options);
+        });
     };
 
     $(window).on('load', function() {
-        $('#carousel').darkcarousel();
+        $('.msicarousel').msicarousel();
     });
 })(jQuery);
