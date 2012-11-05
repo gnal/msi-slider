@@ -124,6 +124,8 @@
     });
 })(jQuery);
 
+// Carousel
+
 (function($) {
     "use strict";
 
