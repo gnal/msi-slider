@@ -133,25 +133,27 @@
 
             self.$el = $(el);
             self.options = $.extend({}, $.fn.msicarousel.options, options);
+
             self.$ul = self.$el.find('ul');
-            self.$li = self.$ul.children('li').first();
-            self.liWidth = self.$li.width() + self.$li.outerWidth(true) - self.$li.innerWidth();
-            self.liHeight = self.$li.outerHeight(true);
-            console.log(self.liHeight);
+
             self.ready = true;
             self.paused = false;
 
             if (self.options.axis === 'x') {
-                self.$ul.css('width', self.liWidth * self.$ul.children('li').length);
+                self.liDimension = self.$ul.children('li').first().outerWidth(true);
+                self.$ul.css('width', self.liDimension * self.$ul.children('li').length);
             } else {
-                self.$ul.css('height', self.liHeight * self.$ul.children('li').length);
+                self.liDimension = self.$ul.children('li').first().outerHeight(true);
+                self.$ul.css('height', self.liDimension * self.$ul.children('li').length);
             }
 
-            setInterval(function() {
-                if (!self.options.pauseOnHover || !self.paused) {
-                    self.slide();
-                }
-            }, self.options.pauseTime);
+            if (self.options.manualAdvance === false) {
+                setInterval(function() {
+                    if (!self.options.pauseOnHover || !self.paused) {
+                        self.slide();
+                    }
+                }, self.options.pauseTime);
+            }
 
             self.listen();
         },
@@ -188,29 +190,29 @@
 
             if (self.options.axis === 'x') {
                 if ('undefined' === typeof $control || $control.hasClass('control-next')) {
-                    self.$ul.animate({'left': '-'+self.liWidth * 2}, function() {
+                    self.$ul.animate({'left': '-'+self.liDimension * 2}, function() {
                         $first.insertAfter($last);
-                        self.$ul.css('left', -self.liWidth);
+                        self.$ul.css('left', -self.liDimension);
                         self.ready = true;
                     });
                 } else {
                     self.$ul.animate({'left': 0}, function() {
                         $last.insertBefore($first);
-                        self.$ul.css('left', -self.liWidth);
+                        self.$ul.css('left', -self.liDimension);
                         self.ready = true;
                     });
                 }
             } else {
                 if ('undefined' === typeof $control || $control.hasClass('control-next')) {
-                    self.$ul.animate({'top': '-'+self.liHeight * 2}, function() {
+                    self.$ul.animate({'top': '-'+self.liDimension * 2}, function() {
                         $first.insertAfter($last);
-                        self.$ul.css('top', -self.liHeight);
+                        self.$ul.css('top', -self.liDimension);
                         self.ready = true;
                     });
                 } else {
                     self.$ul.animate({'top': 0}, function() {
                         $last.insertBefore($first);
-                        self.$ul.css('top', -self.liHeight);
+                        self.$ul.css('top', -self.liDimension);
                         self.ready = true;
                     });
                 }
@@ -228,6 +230,7 @@
     $.fn.msicarousel.options = {
         pauseTime: 3000,
         pauseOnHover: true,
-        axis: 'x'
+        axis: 'x',
+        manualAdvance: false
     };
 })(jQuery, window, document);
