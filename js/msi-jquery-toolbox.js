@@ -36,7 +36,7 @@
                         self.show(self.$thumbWrap.find('.ds-thumb').eq(0));
                     }
                 }
-            }, 5000)
+            }, 5000);
         },
 
         listen: function()
@@ -48,11 +48,11 @@
                 e.preventDefault();
             });
 
-            self.$el.on('mouseenter', function(e) {
+            self.$el.on('mouseenter', function() {
                 self.paused = true;
             });
 
-            self.$el.on('mouseleave', function(e) {
+            self.$el.on('mouseleave', function() {
                 self.paused = false;
             });
         },
@@ -183,7 +183,11 @@
 
             self.$el.on('click', '.control', function(e) {
                 var direction = $(this).hasClass('control-next') ? 'next' : 'prev';
-                self.options.infinite === false ? self.slide(direction): self.slideInfinitely(direction);
+                if (self.options.infinite === false) {
+                    self.slide(direction);
+                } else {
+                    self.slideInfinitely(direction);
+                }
                 e.preventDefault();
             });
 
