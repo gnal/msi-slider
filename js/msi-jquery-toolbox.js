@@ -140,7 +140,9 @@
             self.ready = true;
             self.paused = false;
             self.i = 1;
+            self.position = self.options.axis === 'x' ? 'left' : 'top';
 
+            // if horizontal
             if (self.options.axis === 'x') {
                 // calculate dimension of a li
                 self.liDimension = self.$ul.children('li').first().outerWidth(true);
@@ -148,8 +150,9 @@
                 self.$ul.css('width', self.liDimension * self.ulChildrenLength);
                 // set starting position
                 if (self.options.infinite) {
-                    self.$ul.css('left', -self.liDimension);
+                    self.$ul.css(self.position, -self.liDimension);
                 }
+            // if vertical
             } else {
                 // calculate dimension of a li
                 self.liDimension = self.$ul.children('li').first().outerHeight(true);
@@ -157,7 +160,7 @@
                 self.$ul.css('height', self.liDimension * self.ulChildrenLength);
                 // set starting position
                 if (self.options.infinite) {
-                    self.$ul.css('top', -self.liDimension);
+                    self.$ul.css(self.position, -self.liDimension);
                 }
             }
 
@@ -180,7 +183,7 @@
 
             self.$el.on('click', '.control', function(e) {
                 var direction = $(this).hasClass('control-next') ? 'next' : 'prev';
-                self.options.infinite === false ? self.slide(direction): self.cycle(direction);
+                self.options.infinite === false ? self.slide(direction): self.slideInfinitely(direction);
                 e.preventDefault();
             });
 
@@ -195,32 +198,32 @@
 
         slide: function(direction)
         {
-            var self = this,
-                position = self.options.axis === 'x' ? 'left' : 'top',
-                properties = {};
-
-            if (self.ready === false) {
+            if (this.ready === false) {
                 return;
             }
-            self.ready = false;
+            this.ready = false;
+
+            var self = this,
+                properties = {};
 
             if (direction === 'next') {
                 if (self.i === self.l) {
-                    properties[position] = 0;
+                    properties[self.position] = 0;
                     self.i = 1;
                 } else {
-                    properties[position] = '-'+self.liDimension * self.i;
+                    properties[self.position] = '-'+self.liDimension * self.i;
                     self.i++;
                 }
             } else {
                 if (self.i === 1) {
                     self.i = self.l;
-                    properties[position] = '-'+self.liDimension * (self.l - 1);
+                    properties[self.position] = '-'+self.liDimension * (self.l - 1);
                 } else {
                     self.i--;
-                    properties[position] = '-'+self.liDimension * (self.i - 1);
+                    properties[self.position] = '-'+self.liDimension * (self.i - 1);
                 }
             }
+
             self.$ul.animate(properties, function() {
                 // ready
                 self.ready = true;
@@ -234,27 +237,25 @@
                 }
             });
         },
-        // infini
-        cycle: function(direction)
-        {
-            var self = this;
 
-            if (self.ready === false) {
+        slideInfinitely: function(direction)
+        {
+            if (this.ready === false) {
                 return;
             }
+            this.ready = false;
 
-            self.ready = false;
-
-            var $first = self.$ul.children('li').first(),
+            var self = this,
+                $first = self.$ul.children('li').first(),
                 $last = self.$ul.children('li').last(),
-                position = self.options.axis === 'x' ? 'left' : 'top',
                 properties = {};
 
             if (direction === 'next') {
-                properties[position] = '-'+self.liDimension * 2;
+                properties[self.position] = '-'+self.liDimension * 2;
                 self.$ul.animate(properties, function() {
                     $first.insertAfter($last);
-                    self.$ul.css(position, -self.liDimension);
+                    // reposition the ul so it doesn't move when we insert the li
+                    self.$ul.css(self.position, -self.liDimension);
                     // ready
                     self.ready = true;
                     // callback
@@ -263,10 +264,11 @@
                     }
                 });
             } else {
-                properties[position] = 0;
+                properties[self.position] = 0;
                 self.$ul.animate(properties, function() {
                     $last.insertBefore($first);
-                    self.$ul.css(position, -self.liDimension);
+                    // reposition the ul so it doesn't move when we insert the li
+                    self.$ul.css(self.position, -self.liDimension);
                     // ready
                     self.ready = true;
                     // callback
