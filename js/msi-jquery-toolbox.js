@@ -205,6 +205,7 @@
             if (this.ready === false) {
                 return;
             }
+            // not ready
             this.ready = false;
 
             var self = this,
@@ -247,6 +248,7 @@
             if (this.ready === false) {
                 return;
             }
+            // not ready
             this.ready = false;
 
             var self = this,
