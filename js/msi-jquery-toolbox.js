@@ -133,16 +133,19 @@
 
             self.$el = $(el);
             self.options = $.extend({}, $.fn.msicarousel.options, options);
-
             self.$ul = self.$el.find('ul');
-
             self.$li = self.$ul.children('li').first();
             self.liWidth = self.$li.width() + self.$li.outerWidth(true) - self.$li.innerWidth();
-
+            self.liHeight = self.$li.outerHeight(true);
+            console.log(self.liHeight);
             self.ready = true;
             self.paused = false;
 
-            self.$ul.css('width', self.liWidth * self.$ul.children('li').length);
+            if (self.options.axis === 'x') {
+                self.$ul.css('width', self.liWidth * self.$ul.children('li').length);
+            } else {
+                self.$ul.css('height', self.liHeight * self.$ul.children('li').length);
+            }
 
             setInterval(function() {
                 if (!self.options.pauseOnHover || !self.paused) {
@@ -183,18 +186,34 @@
 
             self.ready = false;
 
-            if ('undefined' === typeof $control || $control.hasClass('control-next')) {
-                self.$ul.animate({'left': '-'+self.liWidth * 2}, function() {
-                    $first.insertAfter($last);
-                    self.$ul.css('left', -self.liWidth);
-                    self.ready = true;
-                });
+            if (self.options.axis === 'x') {
+                if ('undefined' === typeof $control || $control.hasClass('control-next')) {
+                    self.$ul.animate({'left': '-'+self.liWidth * 2}, function() {
+                        $first.insertAfter($last);
+                        self.$ul.css('left', -self.liWidth);
+                        self.ready = true;
+                    });
+                } else {
+                    self.$ul.animate({'left': 0}, function() {
+                        $last.insertBefore($first);
+                        self.$ul.css('left', -self.liWidth);
+                        self.ready = true;
+                    });
+                }
             } else {
-                self.$ul.animate({'left': 0}, function() {
-                    $last.insertBefore($first);
-                    self.$ul.css('left', -self.liWidth);
-                    self.ready = true;
-                });
+                if ('undefined' === typeof $control || $control.hasClass('control-next')) {
+                    self.$ul.animate({'top': '-'+self.liHeight * 2}, function() {
+                        $first.insertAfter($last);
+                        self.$ul.css('top', -self.liHeight);
+                        self.ready = true;
+                    });
+                } else {
+                    self.$ul.animate({'top': 0}, function() {
+                        $last.insertBefore($first);
+                        self.$ul.css('top', -self.liHeight);
+                        self.ready = true;
+                    });
+                }
             }
         }
     };
@@ -207,7 +226,8 @@
     };
 
     $.fn.msicarousel.options = {
-        pauseTime: 1000,
-        pauseOnHover: true
+        pauseTime: 3000,
+        pauseOnHover: true,
+        axis: 'x'
     };
 })(jQuery, window, document);
