@@ -174,9 +174,14 @@
             self.$el.on('mouseleave', function() {
                 self.paused = false;
             });
+
+            self.$el.on('click', '.bullet a', function(e) {
+                self.dada($(this));
+                e.preventDefault();
+            });
         },
 
-        slide: function($control)
+        slide: function($control, callback)
         {
             var self = this;
 
@@ -197,6 +202,9 @@
                     $first.insertAfter($last);
                     self.$ul.css(position, -self.liDimension);
                     self.ready = true;
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
                 });
             } else {
                 properties[position] = 0;
@@ -204,8 +212,36 @@
                     $last.insertBefore($first);
                     self.$ul.css(position, -self.liDimension);
                     self.ready = true;
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
                 });
             }
+        },
+
+        dada: function($control) {
+            var self = this;
+
+            if (self.ready === false) {
+                return;
+            }
+
+            self.ready = false;
+
+            var $first = self.$ul.children('li').first(),
+                $last = self.$ul.children('li').last(),
+                position = self.options.axis === 'x' ? 'left' : 'top',
+                properties = {};
+
+            properties[position] = '-'+self.liDimension * 2;
+            self.$ul.animate(properties, function() {
+                $first.insertAfter($last);
+                self.$ul.css(position, -self.liDimension);
+                self.ready = true;
+                if (self.$ul.children('li').eq(2).attr('id') !== 'dadada') {
+                    self.dada();
+                }
+            });
         }
     };
 
