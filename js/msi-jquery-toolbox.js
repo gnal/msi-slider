@@ -135,17 +135,21 @@
             self.options = $.extend({}, $.fn.msicarousel.options, options);
 
             self.$ul = self.$el.find('ul');
+            self.ulChildrenLength = self.$ul.children('li').length;
 
             self.ready = true;
             self.paused = false;
+            self.i = 1;
 
             if (self.options.axis === 'x') {
                 self.liDimension = self.$ul.children('li').first().outerWidth(true);
-                self.$ul.css('width', self.liDimension * self.$ul.children('li').length);
+                self.$ul.css('width', self.liDimension * self.ulChildrenLength);
             } else {
                 self.liDimension = self.$ul.children('li').first().outerHeight(true);
-                self.$ul.css('height', self.liDimension * self.$ul.children('li').length);
+                self.$ul.css('height', self.liDimension * self.ulChildrenLength);
             }
+
+            self.l = self.ulChildrenLength - Math.round(self.$el.width() / self.liDimension) + 1;
 
             if (self.options.manualAdvance === false) {
                 setInterval(function() {
@@ -174,14 +178,53 @@
             self.$el.on('mouseleave', function() {
                 self.paused = false;
             });
-
-            self.$el.on('click', '.bullet a', function(e) {
-                self.dada($(this));
-                e.preventDefault();
-            });
         },
 
-        slide: function($control, callback)
+        slide: function($control)
+        {
+            var self = this,
+                position = self.options.axis === 'x' ? 'left' : 'top',
+                properties = {};
+
+            if (self.ready === false) {
+                return;
+            }
+            self.ready = false;
+
+            var direction = ('undefined' === typeof $control || $control.hasClass('control-next')) ? 'next' : 'prev';
+
+            if (direction === 'next') {
+                if (self.i === self.l) {
+                    properties[position] = 0;
+                    self.i = 1;
+                } else {
+                    properties[position] = '-'+self.liDimension * self.i;
+                    self.i++;
+                }
+            } else {
+                if (self.i === 1) {
+                    self.i = self.l;
+                    properties[position] = '-'+self.liDimension * (self.l - 1);
+                } else {
+                    self.i--;
+                    properties[position] = '-'+self.liDimension * (self.i - 1);
+                }
+            }
+            self.$ul.animate(properties, function() {
+                // ready
+                self.ready = true;
+                // callback
+                if (direction === 'next' && typeof self.options.afterNext === 'function') {
+                    self.options.afterNext();
+                }
+                // callback
+                if (direction === 'prev' && typeof self.options.afterPrev === 'function') {
+                    self.options.afterPrev();
+                }
+            });
+        },
+        // infini
+        cycle: function($control)
         {
             var self = this;
 
@@ -201,9 +244,11 @@
                 self.$ul.animate(properties, function() {
                     $first.insertAfter($last);
                     self.$ul.css(position, -self.liDimension);
+                    // ready
                     self.ready = true;
-                    if (typeof callback === 'function') {
-                        callback();
+                    // callback
+                    if (direction === 'next' && typeof self.options.afterNext === 'function') {
+                        self.options.afterNext();
                     }
                 });
             } else {
@@ -211,37 +256,14 @@
                 self.$ul.animate(properties, function() {
                     $last.insertBefore($first);
                     self.$ul.css(position, -self.liDimension);
+                    // ready
                     self.ready = true;
-                    if (typeof callback === 'function') {
-                        callback();
+                    // callback
+                    if (direction === 'prev' && typeof self.options.afterPrev === 'function') {
+                        self.options.afterPrev();
                     }
                 });
             }
-        },
-
-        dada: function($control) {
-            var self = this;
-
-            if (self.ready === false) {
-                return;
-            }
-
-            self.ready = false;
-
-            var $first = self.$ul.children('li').first(),
-                $last = self.$ul.children('li').last(),
-                position = self.options.axis === 'x' ? 'left' : 'top',
-                properties = {};
-
-            properties[position] = '-'+self.liDimension * 2;
-            self.$ul.animate(properties, function() {
-                $first.insertAfter($last);
-                self.$ul.css(position, -self.liDimension);
-                self.ready = true;
-                if (self.$ul.children('li').eq(2).attr('id') !== 'dadada') {
-                    self.dada();
-                }
-            });
         }
     };
 
@@ -256,6 +278,8 @@
         pauseTime: 3000,
         pauseOnHover: true,
         axis: 'x',
-        manualAdvance: false
+        manualAdvance: false,
+        afterNext: function() {},
+        afterPrev: function() {}
     };
 })(jQuery, window, document);
