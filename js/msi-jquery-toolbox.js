@@ -142,11 +142,23 @@
             self.i = 1;
 
             if (self.options.axis === 'x') {
+                // calculate dimension of a li
                 self.liDimension = self.$ul.children('li').first().outerWidth(true);
+                // set correct dimension for the ul
                 self.$ul.css('width', self.liDimension * self.ulChildrenLength);
+                // set starting position
+                if (self.options.infinite) {
+                    self.$ul.css('left', -self.liDimension);
+                }
             } else {
+                // calculate dimension of a li
                 self.liDimension = self.$ul.children('li').first().outerHeight(true);
+                // set correct dimension for the ul
                 self.$ul.css('height', self.liDimension * self.ulChildrenLength);
+                // set starting position
+                if (self.options.infinite) {
+                    self.$ul.css('top', -self.liDimension);
+                }
             }
 
             self.l = self.ulChildrenLength - Math.round(self.$el.width() / self.liDimension) + 1;
@@ -154,7 +166,7 @@
             if (self.options.manualAdvance === false) {
                 setInterval(function() {
                     if (!self.options.pauseOnHover || !self.paused) {
-                        self.slide();
+                        self.slide('next');
                     }
                 }, self.options.pauseTime);
             }
@@ -167,7 +179,8 @@
             var self = this;
 
             self.$el.on('click', '.control', function(e) {
-                self.slide($(this));
+                var direction = $(this).hasClass('control-next') ? 'next' : 'prev';
+                self.options.infinite === false ? self.slide(direction): self.cycle(direction);
                 e.preventDefault();
             });
 
@@ -180,7 +193,7 @@
             });
         },
 
-        slide: function($control)
+        slide: function(direction)
         {
             var self = this,
                 position = self.options.axis === 'x' ? 'left' : 'top',
@@ -190,8 +203,6 @@
                 return;
             }
             self.ready = false;
-
-            var direction = ('undefined' === typeof $control || $control.hasClass('control-next')) ? 'next' : 'prev';
 
             if (direction === 'next') {
                 if (self.i === self.l) {
@@ -224,7 +235,7 @@
             });
         },
         // infini
-        cycle: function($control)
+        cycle: function(direction)
         {
             var self = this;
 
@@ -239,7 +250,7 @@
                 position = self.options.axis === 'x' ? 'left' : 'top',
                 properties = {};
 
-            if ('undefined' === typeof $control || $control.hasClass('control-next')) {
+            if (direction === 'next') {
                 properties[position] = '-'+self.liDimension * 2;
                 self.$ul.animate(properties, function() {
                     $first.insertAfter($last);
@@ -275,6 +286,7 @@
     };
 
     $.fn.msicarousel.options = {
+        infinite: false,
         pauseTime: 3000,
         pauseOnHover: true,
         axis: 'x',
