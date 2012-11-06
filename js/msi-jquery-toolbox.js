@@ -178,9 +178,7 @@
 
         slide: function($control)
         {
-            var self = this,
-                $first = self.$ul.children('li').first(),
-                $last = self.$ul.children('li').last();
+            var self = this;
 
             if (self.ready === false) {
                 return;
@@ -188,34 +186,25 @@
 
             self.ready = false;
 
-            if (self.options.axis === 'x') {
-                if ('undefined' === typeof $control || $control.hasClass('control-next')) {
-                    self.$ul.animate({'left': '-'+self.liDimension * 2}, function() {
-                        $first.insertAfter($last);
-                        self.$ul.css('left', -self.liDimension);
-                        self.ready = true;
-                    });
-                } else {
-                    self.$ul.animate({'left': 0}, function() {
-                        $last.insertBefore($first);
-                        self.$ul.css('left', -self.liDimension);
-                        self.ready = true;
-                    });
-                }
+            var $first = self.$ul.children('li').first(),
+                $last = self.$ul.children('li').last(),
+                position = self.options.axis === 'x' ? 'left' : 'top',
+                properties = {};
+
+            if ('undefined' === typeof $control || $control.hasClass('control-next')) {
+                properties[position] = '-'+self.liDimension * 2;
+                self.$ul.animate(properties, function() {
+                    $first.insertAfter($last);
+                    self.$ul.css(position, -self.liDimension);
+                    self.ready = true;
+                });
             } else {
-                if ('undefined' === typeof $control || $control.hasClass('control-next')) {
-                    self.$ul.animate({'top': '-'+self.liDimension * 2}, function() {
-                        $first.insertAfter($last);
-                        self.$ul.css('top', -self.liDimension);
-                        self.ready = true;
-                    });
-                } else {
-                    self.$ul.animate({'top': 0}, function() {
-                        $last.insertBefore($first);
-                        self.$ul.css('top', -self.liDimension);
-                        self.ready = true;
-                    });
-                }
+                properties[position] = 0;
+                self.$ul.animate(properties, function() {
+                    $last.insertBefore($first);
+                    self.$ul.css(position, -self.liDimension);
+                    self.ready = true;
+                });
             }
         }
     };
