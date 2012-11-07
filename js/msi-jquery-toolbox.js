@@ -164,7 +164,8 @@
                 }
             }
 
-            self.l = self.ulChildrenLength - Math.round(self.$el.width() / self.liDimension) + 1;
+            self.l = self.ulChildrenLength - Math.ceil(self.$ul.closest('div').width() / self.liDimension) + 1;
+            if (self.l < 1) self.l = 1;
 
             if (self.options.manualAdvance === false) {
                 setInterval(function() {
