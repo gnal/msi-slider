@@ -169,7 +169,11 @@
             if (self.options.manualAdvance === false) {
                 setInterval(function() {
                     if (!self.options.pauseOnHover || !self.paused) {
-                        self.slide('next');
+                        if (self.options.infinite === false) {
+                            self.slide('next');
+                        } else {
+                            self.slideInfinitely('next');
+                        }
                     }
                 }, self.options.pauseTime);
             }
