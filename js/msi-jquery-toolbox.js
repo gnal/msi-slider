@@ -141,6 +141,7 @@
             self.paused = false;
             self.i = 1;
             self.position = self.options.axis === 'x' ? 'left' : 'top';
+            self.slideFunc = self.options.infinite === false ? self.slide : self.slideInfinitely;
 
             // if horizontal
             if (self.options.axis === 'x') {
@@ -148,33 +149,26 @@
                 self.liDimension = self.$ul.children('li').first().outerWidth(true);
                 // set correct dimension for the ul
                 self.$ul.css('width', self.liDimension * self.ulChildrenLength);
-                // set starting position
-                if (self.options.infinite) {
-                    self.$ul.css(self.position, -self.liDimension);
-                }
             // if vertical
             } else {
                 // calculate dimension of a li
                 self.liDimension = self.$ul.children('li').first().outerHeight(true);
                 // set correct dimension for the ul
                 self.$ul.css('height', self.liDimension * self.ulChildrenLength);
-                // set starting position
-                if (self.options.infinite) {
-                    self.$ul.css(self.position, -self.liDimension);
-                }
             }
 
-            self.l = self.ulChildrenLength - Math.ceil(self.$ul.closest('div').width() / self.liDimension) + 1;
+            self.infiniteL = self.l = self.ulChildrenLength - Math.ceil(self.$ul.closest('div').width() / self.liDimension) + 1;
             if (self.l < 1) self.l = 1;
+
+            // set starting position of first slide
+            if (self.infiniteL > 0 && self.options.infinite) {
+                self.$ul.css(self.position, -self.liDimension);
+            }
 
             if (self.options.manualAdvance === false) {
                 setInterval(function() {
                     if (!self.options.pauseOnHover || !self.paused) {
-                        if (self.options.infinite === false) {
-                            self.slide('next');
-                        } else {
-                            self.slideInfinitely('next');
-                        }
+                        self.slideFunc('next');
                     }
                 }, self.options.pauseTime);
             }
@@ -188,11 +182,7 @@
 
             self.$el.on('click', '.control', function(e) {
                 var direction = $(this).hasClass('control-next') ? 'next' : 'prev';
-                if (self.options.infinite === false) {
-                    self.slide(direction);
-                } else {
-                    self.slideInfinitely(direction);
-                }
+                self.slideFunc(direction);
                 e.preventDefault();
             });
 
@@ -250,7 +240,7 @@
 
         slideInfinitely: function(direction)
         {
-            if (this.ready === false) {
+            if (this.infiniteL < 1 || this.ready === false) {
                 return;
             }
             // not ready
