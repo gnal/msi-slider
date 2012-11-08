@@ -297,4 +297,4 @@
         afterNext: function() {},
         afterPrev: function() {}
     };
-})(jQuery, window, document);
+})(jQuery, window);
