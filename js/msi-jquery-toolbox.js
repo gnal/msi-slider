@@ -124,7 +124,7 @@
 
 // Carousel
 
-(function($, window, document) {
+(function($, window, undefined) {
     "use strict";
 
     var Carousel = {
