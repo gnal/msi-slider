@@ -11,12 +11,13 @@
             self.options = $.extend({}, $.fn.msicarousel.options, options);
 
             self.$ul = self.$el.find('ul.carousel');
-            self.ulChildrenLength = self.$ul.children('li').length;
             self.$currentCarouselLi = self.$ul.children('li').first();
 
+            self.ulChildrenLength = self.$ul.children('li').length;
             self.carouselReady = true;
             self.sliderReady = true;
             self.clicked = false;
+            self.interval = 0;
             self.i = 1;
             self.position = self.options.axis === 'x' ? 'left' : 'top';
             self.slideFunc = self.options.infinite === false ? self.slide : self.slideInfinitely;
@@ -42,11 +43,8 @@
                 self.$ul.children('li').last().insertBefore(self.$ul.children('li').first());
             }
 
-            if (this.options.cycle === true) {
-                self.cycle();
-            }
-
             self.listen();
+            self.cycle();
 
             if (this.options.debug === true) {
                 self.debug();
@@ -62,12 +60,14 @@
                 e.preventDefault();
             });
 
-            self.$el.on('click', 'ul.carousel li', function(e) {
-                self.clicked = true;
-                self.pause();
-                self.show($(this));
-                e.preventDefault();
-            });
+            if (self.options.slider === true) {
+                self.$el.on('click', 'ul.carousel li', function(e) {
+                    self.clicked = true;
+                    self.pause();
+                    self.show($(this));
+                    e.preventDefault();
+                });
+            }
 
             if (self.options.pauseOnHover === true && self.options.cycle === true) {
                 self.$el.on('mouseenter', function() {
@@ -84,11 +84,14 @@
         },
 
         cycle: function() {
-            var self = this;
-
-            if (self.clicked === true) {
+            if (this.clicked === true) {
                 return;
             }
+            if (this.options.cycle === false) {
+                return
+            }
+
+            var self = this;
 
             if (this.canSlide === true) {
                 this.interval = setInterval($.proxy(this.slideFunc, this), this.options.pauseTime);
@@ -101,10 +104,12 @@
 
         slide: function(direction)
         {
-            if (this.canSlide === false || this.carouselReady === false) {
+            if (this.canSlide === false) {
                 return;
             }
-            // not ready
+            if (this.carouselReady === false) {
+                return;
+            }
             this.carouselReady = false;
 
             var self = this,
@@ -149,10 +154,12 @@
 
         slideInfinitely: function(direction)
         {
-            if (this.canSlide === false || this.carouselReady === false) {
+            if (this.canSlide === false) {
                 return;
             }
-            // not ready
+            if (this.carouselReady === false) {
+                return;
+            }
             this.carouselReady = false;
 
             var self = this,
@@ -207,7 +214,16 @@
                 $newSliderOverlay = $newSliderLi.find('.overlay'),
                 $oldSliderOverlay = $oldSliderLi.find('.overlay');
 
-            if ($oldSliderLi.attr('id') === newId || this.sliderReady === false || this.options.slider === false) {
+            if ($oldSliderLi.attr('id') === newId) {
+                return;
+            }
+            if (this.carouselReady === false) {
+                return;
+            }
+            if (this.sliderReady === false) {
+                return;
+            }
+            if (this.options.slider === false) {
                 return;
             }
             this.sliderReady = false;
@@ -215,9 +231,10 @@
 
             $oldSliderLi.css('z-index', 998).removeClass('active');
             $newSliderLi.css('z-index', 999).addClass('active');
-
             $li.addClass('active');
             self.$currentCarouselLi.removeClass('active');
+
+            self.$currentCarouselLi = $li;
 
             $newSliderLi.fadeIn(300, function() {
                 $oldSliderLi.hide();
@@ -233,8 +250,6 @@
                     self.carouselReady = true;
                 }
             });
-
-            self.$currentCarouselLi = $li;
         },
 
         debug: function() {
