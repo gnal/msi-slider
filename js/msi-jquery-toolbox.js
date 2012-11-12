@@ -1,128 +1,4 @@
-// Slider
-
-(function($) {
-    "use strict";
-
-    var Slider = function(el, options)
-    {
-        this.$el = el;
-        this.options = options;
-
-        this.$stuffWrap = this.$el.find('.ds-stuff-wrap');
-        this.$thumbWrap = this.$el.find('.ds-thumb-wrap');
-
-        this.$activeStuff = this.$stuffWrap.find('.ds-stuff').eq(0);
-        this.$activeThumb = this.$thumbWrap.find('.ds-thumb').eq(0);
-
-        this.ready = true;
-        this.paused = false;
-
-        this.init();
-        this.listen();
-    };
-
-    Slider.prototype = {
-        init: function() {
-            var self = this;
-
-            self.enableStuff(self.$activeStuff);
-            self.enableThumb(self.$activeThumb);
-
-            setInterval(function() {
-                if (!self.paused) {
-                    if (self.$activeThumb.next().length > 0) {
-                        self.show(self.$activeThumb.next());
-                    } else {
-                        self.show(self.$thumbWrap.find('.ds-thumb').eq(0));
-                    }
-                }
-            }, 5000);
-        },
-
-        listen: function()
-        {
-            var self = this;
-
-            self.$el.find('.ds-thumb').on('click', function(e) {
-                self.show($(this));
-                e.preventDefault();
-            });
-
-            self.$el.on('mouseenter', function() {
-                self.paused = true;
-            });
-
-            self.$el.on('mouseleave', function() {
-                self.paused = false;
-            });
-        },
-
-        show: function($thumb)
-        {
-            var self = this,
-                newId = 'photo'+$thumb.data('id'),
-                $oldStuff = self.$activeStuff,
-                $newStuff = self.$el.find('#'+newId);
-
-            if (self.ready === false || $oldStuff.attr('id') === newId) {
-                return;
-            }
-
-            self.ready = false;
-
-            self.disableThumb(self.$activeThumb);
-            self.enableThumb($thumb);
-
-            self.disableStuff(self.$activeStuff);
-            self.enableStuff($newStuff);
-
-            $newStuff.fadeIn(200, function() {
-                $oldStuff.fadeOut(1);
-                $oldStuff.find('.text-container').fadeOut(1);
-
-                $newStuff.find('.text-container').effect('slide', {mode: 'show', easing: 'easeOutBounce'}, 1500);
-
-                self.ready = true;
-            });
-        },
-
-        enableThumb: function($thumb)
-        {
-            $thumb.addClass('active');
-            this.$activeThumb = $thumb;
-
-            return $thumb;
-        },
-
-        disableThumb: function($thumb)
-        {
-            $thumb.removeClass('active');
-
-            return $thumb;
-        },
-
-        enableStuff: function($stuff)
-        {
-            $stuff.addClass('active').css('z-index', 999);
-            this.$activeStuff = $stuff;
-
-            return $stuff;
-        },
-
-        disableStuff: function($stuff)
-        {
-            $stuff.removeClass('active').css('z-index', 9);
-
-            return $stuff;
-        }
-    };
-
-    $.fn.slider = function(options) {
-        var slider = new Slider(this, options);
-    };
-})(jQuery);
-
-// Carousel
+// Carouslider
 
 (function($, window, undefined) {
     "use strict";
@@ -134,10 +10,13 @@
             self.$el = $(el);
             self.options = $.extend({}, $.fn.msicarousel.options, options);
 
-            self.$ul = self.$el.find('ul');
+            self.$ul = self.$el.find('ul.carousel');
             self.ulChildrenLength = self.$ul.children('li').length;
+            self.$currentCarouselLi = self.$ul.children('li').first();
 
-            self.ready = true;
+            self.carouselReady = true;
+            self.sliderReady = true;
+            self.clicked = false;
             self.i = 1;
             self.position = self.options.axis === 'x' ? 'left' : 'top';
             self.slideFunc = self.options.infinite === false ? self.slide : self.slideInfinitely;
@@ -163,10 +42,14 @@
                 self.$ul.children('li').last().insertBefore(self.$ul.children('li').first());
             }
 
-            self.listen();
-
             if (this.options.cycle === true) {
                 self.cycle();
+            }
+
+            self.listen();
+
+            if (this.options.debug === true) {
+                self.debug();
             }
         },
 
@@ -174,13 +57,19 @@
         {
             var self = this;
 
-            self.$el.on('click', '.move', function(e) {
-                var direction = $(this).hasClass('move-next') ? 'next' : 'prev';
-                self.slideFunc(direction);
+            self.$el.on('click', 'a.control', function(e) {
+                self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
                 e.preventDefault();
             });
 
-            if (self.options.pauseOnHover === true) {
+            self.$el.on('click', 'ul.carousel li', function(e) {
+                self.clicked = true;
+                self.pause();
+                self.show($(this));
+                e.preventDefault();
+            });
+
+            if (self.options.pauseOnHover === true && self.options.cycle === true) {
                 self.$el.on('mouseenter', function() {
                     self.pause();
                 });
@@ -192,20 +81,31 @@
 
         pause: function() {
             clearInterval(this.interval);
-            this.interval = null;
         },
 
         cycle: function() {
-            this.interval = setInterval($.proxy(this.slideFunc, this), this.options.pauseTime);
+            var self = this;
+
+            if (self.clicked === true) {
+                return;
+            }
+
+            if (this.canSlide === true) {
+                this.interval = setInterval($.proxy(this.slideFunc, this), this.options.pauseTime);
+            } else {
+                this.interval = setInterval(function() {
+                    self.show(self.$currentCarouselLi.next().length ? self.$currentCarouselLi.next() : self.$ul.children('li').first());
+                }, this.options.pauseTime);
+            }
         },
 
         slide: function(direction)
         {
-            if (this.canSlide === false || this.ready === false) {
+            if (this.canSlide === false || this.carouselReady === false) {
                 return;
             }
             // not ready
-            this.ready = false;
+            this.carouselReady = false;
 
             var self = this,
                 properties = {};
@@ -235,7 +135,7 @@
 
             self.$ul.animate(properties, function() {
                 // ready
-                self.ready = true;
+                self.carouselReady = true;
                 // callback
                 if (direction === 'next' && typeof self.options.afterNext === 'function') {
                     self.options.afterNext();
@@ -249,11 +149,11 @@
 
         slideInfinitely: function(direction)
         {
-            if (this.canSlide === false || this.ready === false) {
+            if (this.canSlide === false || this.carouselReady === false) {
                 return;
             }
             // not ready
-            this.ready = false;
+            this.carouselReady = false;
 
             var self = this,
                 $first = self.$ul.children('li').first(),
@@ -264,31 +164,86 @@
 
             if (direction === 'next') {
                 properties[self.position] = '-'+self.liDimension * 2;
+
                 self.$ul.animate(properties, function() {
                     $first.insertAfter($last);
-                    // reposition the ul so it doesn't move when we insert the li
+                    // reposition the ul
                     self.$ul.css(self.position, -self.liDimension);
-                    // ready
-                    self.ready = true;
                     // callback
                     if (typeof self.options.afterNext === 'function') {
                         self.options.afterNext();
+                    }
+                    if (self.options.slider === true) {
+                        self.show(self.$currentCarouselLi.next().length ? self.$currentCarouselLi.next() : self.$ul.children('li').first());
+                    } else {
+                        self.carouselReady = true;
                     }
                 });
             } else {
                 properties[self.position] = 0;
                 self.$ul.animate(properties, function() {
                     $last.insertBefore($first);
-                    // reposition the ul so it doesn't move when we insert the li
+                    // reposition the ul
                     self.$ul.css(self.position, -self.liDimension);
-                    // ready
-                    self.ready = true;
                     // callback
                     if (typeof self.options.afterPrev === 'function') {
                         self.options.afterPrev();
                     }
+                    if (self.options.slider === true) {
+                        self.show(self.$currentCarouselLi.prev().length ? self.$activeLi.prev() : self.$ul.children('li').last());
+                    } else {
+                        self.carouselReady = true;
+                    }
                 });
             }
+        },
+
+        show: function($li)
+        {
+            var self = this,
+                newId = 'li'+$li.data('id'),
+                $oldSliderLi = self.$el.find('ul.slider > li.active'),
+                $newSliderLi = self.$el.find('#'+newId),
+                $newSliderOverlay = $newSliderLi.find('.overlay'),
+                $oldSliderOverlay = $oldSliderLi.find('.overlay');
+
+            if ($oldSliderLi.attr('id') === newId || this.sliderReady === false || this.options.slider === false) {
+                return;
+            }
+            this.sliderReady = false;
+            this.carouselReady = false;
+
+            $oldSliderLi.css('z-index', 998).removeClass('active');
+            $newSliderLi.css('z-index', 999).addClass('active');
+
+            $li.addClass('active');
+            self.$currentCarouselLi.removeClass('active');
+
+            $newSliderLi.fadeIn(300, function() {
+                $oldSliderLi.hide();
+                $newSliderOverlay.hide();
+
+                if ($newSliderOverlay.length) {
+                    $newSliderOverlay.effect('slide', {direction: 'left', mode: 'show', easing: 'swing'}, 800, function() {
+                        self.sliderReady = true;
+                        self.carouselReady = true;
+                    });
+                } else {
+                    self.sliderReady = true;
+                    self.carouselReady = true;
+                }
+            });
+
+            self.$currentCarouselLi = $li;
+        },
+
+        debug: function() {
+            console.log('element: '+this.$el.attr('id'));
+            console.log('canSlide: '+this.canSlide);
+            console.log('wrap dimension: '+this.wrapDimension+'px');
+            console.log('li dimension: '+this.liDimension+'px');
+            console.log('number of li: '+this.ulChildrenLength);
+            console.log('number of visible li: '+this.visibleLiLength);
         }
     };
 
@@ -303,8 +258,10 @@
         infinite: false,
         pauseTime: 3000,
         pauseOnHover: true,
+        debug: false,
         axis: 'x',
         cycle: false,
+        slider: false,
         afterNext: function() {},
         afterPrev: function() {}
     };
