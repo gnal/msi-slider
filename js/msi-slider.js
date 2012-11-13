@@ -43,7 +43,8 @@
             }
 
             self.listen();
-            self.cycle();
+
+            self.options.cycle && self.cycle();
 
             if (self.options.debug) {
                 self.debug();
@@ -88,10 +89,6 @@
             var self = this;
 
             if (self.clicked) {
-                return;
-            }
-
-            if (!self.options.cycle) {
                 return;
             }
 
