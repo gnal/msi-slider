@@ -1,6 +1,6 @@
 if ( typeof Object.create !== 'function' ) {
     Object.create = function( obj ) {
-        function F() {};
+        function F() {}
         F.prototype = obj;
         return new F();
     };
@@ -16,10 +16,34 @@ if ( typeof Object.create !== 'function' ) {
             self.$el = $(el);
             self.options = $.extend({}, $.fn.msiSlider.options, options);
 
-            self.$ul = self.$el.find('ul.carousel');
-            self.$activeCarouselLi = self.$ul.children('li').first();
+            self.$cUl = self.$el.find('ul.carousel');
+            self.$sUl = self.$el.find('ul.slider');
 
-            self.ulChildrenLength = self.$ul.children('li').length;
+            self.$cLiActive = self.$cUl
+                .children('li')
+                .first()
+                .addClass('active');
+
+            self.$sUl
+                .children('li')
+                .first()
+                .addClass('active')
+                .css('z-index', 999);
+
+            $.each(self.$sUl.children('li'), function(i, e) {
+                var $e = $(e);
+                $e.attr('data-sid', i);
+                if (i !== 0) {
+                    $e.css('z-index', 998).hide();
+                }
+            });
+
+            $.each(self.$cUl.children('li'), function(i, e) {
+                var $e = $(e);
+                $e.attr('data-cid', i);
+            });
+
+            self.ulChildrenLength = self.$cUl.children('li').length;
             self.carouselReady = true;
             self.sliderReady = true;
             self.clicked = false;
@@ -29,11 +53,11 @@ if ( typeof Object.create !== 'function' ) {
             self.slideFunc = !self.options.infinite ? self.slide : self.slideInfinitely;
 
             if (self.options.axis === 'x') {
-                self.liDimension = self.$ul.children('li').first().outerWidth(true);
-                self.wrapDimension = self.$ul.closest('div').width();
+                self.liDimension = self.$cUl.children('li').first().outerWidth(true);
+                self.wrapDimension = self.$cUl.closest('div').width();
             } else {
-                self.liDimension = self.$ul.children('li').first().outerHeight(true);
-                self.wrapDimension = self.$ul.closest('div').height();
+                self.liDimension = self.$cUl.children('li').first().outerHeight(true);
+                self.wrapDimension = self.$cUl.closest('div').height();
             }
 
             self.visibleLiLength = Math.ceil(self.wrapDimension / self.liDimension);
@@ -41,18 +65,16 @@ if ( typeof Object.create !== 'function' ) {
             self.sliderCanSlide = self.ulChildrenLength > 1 ? true : false;
 
             // set ul dimension
-            self.$ul.css(self.options.axis === 'x' ? 'width' : 'height', self.liDimension * self.ulChildrenLength);
+            self.$cUl.css(self.options.axis === 'x' ? 'width' : 'height', self.liDimension * self.ulChildrenLength);
 
             // set starting position of first slide
             if (self.options.infinite && self.visibleLiLength < self.ulChildrenLength) {
-                self.$ul.css(self.position, -self.liDimension);
+                self.$cUl.css(self.position, -self.liDimension);
                 // put last li in first so we see the first li and not the second, at begining
-                self.$ul.children('li').last().insertBefore(self.$ul.children('li').first());
+                self.$cUl.children('li').last().insertBefore(self.$cUl.children('li').first());
             }
 
             self.listen();
-
-            self.options.cycle && self.cycle();
 
             if (self.options.debug) {
                 self.debug();
@@ -63,30 +85,37 @@ if ( typeof Object.create !== 'function' ) {
         {
             var self = this;
 
-            if (self.carouselCanSlide) {
-                self.$el.on('click', 'a.control', function(e) {
-                    self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
-                    e.preventDefault();
-                });
-            }
+            $(window).on('load', function() {
+                self.$el.css('visibility', 'visible');
+                self.options.cycle && self.cycle();
 
-            if (self.options.slider) {
-                self.$el.on('click', 'ul.carousel li', function(e) {
-                    self.clicked = true;
-                    self.pause();
-                    self.show($(this));
-                    e.preventDefault();
-                });
-            }
+                if (self.carouselCanSlide) {
+                    self.$el.on('click', 'a.control', function(e) {
+                        self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
+                        e.preventDefault();
+                    });
+                }
 
-            if (self.options.cycle && self.options.pauseOnHover) {
-                self.$el.on('mouseenter', function() {
-                    self.pause();
-                });
-                self.$el.on('mouseleave', function() {
-                    self.cycle();
-                });
-            }
+                if (self.options.slider) {
+                    self.$el.on('click', 'ul.carousel li', function(e) {
+                        if (self.sliderReady) {
+                            self.clicked = true;
+                            self.pause();
+                            self.show($(this));
+                        }
+                        e.preventDefault();
+                    });
+                }
+
+                if (self.options.cycle && self.options.pauseOnHover) {
+                    self.$el.on('mouseenter', function() {
+                        self.pause();
+                    });
+                    self.$el.on('mouseleave', function() {
+                        self.cycle();
+                    });
+                }
+            });
         },
 
         pause: function() {
@@ -101,14 +130,14 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             if (self.carouselCanSlide) {
-                self.interval = setInterval($.proxy(self.slideFunc, self), self.options.speed);
+                self.interval = setInterval($.proxy(self.slideFunc, self), self.options.pauseTime);
                 return;
             }
 
             if (self.sliderCanSlide) {
                 self.interval = setInterval(function() {
-                    self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
-                }, self.options.speed);
+                    self.show(self.$cLiActive.next().length ? self.$cLiActive.next() : self.$cUl.children('li').first());
+                }, self.options.pauseTime);
                 return;
             }
         },
@@ -151,7 +180,7 @@ if ( typeof Object.create !== 'function' ) {
                 }
             }
 
-            self.$ul.animate(properties, function() {
+            self.$cUl.animate(properties, function() {
                 // ready
                 self.carouselReady = true;
                 // callback
@@ -168,8 +197,8 @@ if ( typeof Object.create !== 'function' ) {
         slideInfinitely: function(direction)
         {
             var self = this,
-                $first = self.$ul.children('li').first(),
-                $last = self.$ul.children('li').last(),
+                $first = self.$cUl.children('li').first(),
+                $last = self.$cUl.children('li').last(),
                 properties = {};
 
             if (!self.carouselCanSlide) {
@@ -187,33 +216,33 @@ if ( typeof Object.create !== 'function' ) {
             if (direction === 'next') {
                 properties[self.position] = '-'+self.liDimension * 2;
 
-                self.$ul.animate(properties, function() {
+                self.$cUl.animate(properties, self.options.carouselSpeed, function() {
                     $first.insertAfter($last);
                     // reposition the ul
-                    self.$ul.css(self.position, -self.liDimension);
+                    self.$cUl.css(self.position, -self.liDimension);
                     // callback
                     if (typeof self.options.afterCarouselNext === 'function') {
                         self.options.afterCarouselNext();
                     }
                     if (self.options.slider) {
-                        self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
+                        self.show(self.$cLiActive.next().length ? self.$cLiActive.next() : self.$cUl.children('li').first());
                     } else {
                         self.carouselReady = true;
                     }
                 });
             } else {
                 properties[self.position] = 0;
-                self.$ul.animate(properties, function() {
+                self.$cUl.animate(properties, self.options.carouselSpeed, function() {
                     $last.insertBefore($first);
                     // reposition the ul
-                    self.$ul.css(self.position, -self.liDimension);
+                    self.$cUl.css(self.position, -self.liDimension);
                     // callback
                     if (typeof self.options.afterCarouselPrev === 'function') {
                         self.options.afterCarouselPrev();
                     }
                     if (self.options.slider) {
                         // cannot call method prev of undefined
-                        self.show(self.$activeCarouselLi.prev().length ? self.$activeCarouselLi.prev() : self.$ul.children('li').last());
+                        self.show(self.$cLiActive.prev().length ? self.$cLiActive.prev() : self.$cUl.children('li').last());
                     } else {
                         self.carouselReady = true;
                     }
@@ -221,16 +250,16 @@ if ( typeof Object.create !== 'function' ) {
             }
         },
 
-        show: function($li)
+        show: function($cLiClicked)
         {
             var self = this,
-                newId = $li.data('cid'),
+                newId = $cLiClicked.data('cid'),
                 $oldSliderLi = self.$el.find('ul.slider > li.active'),
                 $newSliderLi = self.$el.find('ul.slider > li[data-sid='+newId+']'),
                 $newSliderOverlay = $newSliderLi.find('.overlay'),
                 $oldSliderOverlay = $oldSliderLi.find('.overlay');
 
-            if ($oldSliderLi.attr('id') === newId) {
+            if ($oldSliderLi.data('sid') === newId) {
                 return;
             }
             if (!self.sliderReady) {
@@ -244,17 +273,17 @@ if ( typeof Object.create !== 'function' ) {
 
             $oldSliderLi.css('z-index', 998).removeClass('active');
             $newSliderLi.css('z-index', 999).addClass('active');
-            $li.addClass('active');
-            self.$activeCarouselLi.removeClass('active');
+            $cLiClicked.addClass('active');
+            self.$cLiActive.removeClass('active');
 
-            self.$activeCarouselLi = $li;
+            self.$cLiActive = $cLiClicked;
 
-            $newSliderLi.effect(self.options.sliderFx, self.options.sliderFxArgs, self.options.sliderFxSpeed, function() {
+            $newSliderLi.effect(self.options.sliderEffect, self.options.sliderArgs, self.options.sliderSpeed, function() {
                 $oldSliderLi.hide();
                 $oldSliderOverlay.hide();
 
                 if ($newSliderOverlay.length) {
-                    $newSliderOverlay.effect(self.options.overlayFx, self.options.overlayFxArgs, self.options.overlayFxSpeed, function() {
+                    $newSliderOverlay.effect(self.options.overlayEffect, self.options.overlayArgs, self.options.overlaySpeed, function() {
                         self.sliderReady = true;
                         self.carouselReady = true;
                     });
@@ -283,19 +312,20 @@ if ( typeof Object.create !== 'function' ) {
     };
 
     $.fn.msiSlider.options = {
+        slider: true,
         infinite: true,
-        speed: 3000,
+        cycle: true,
+        pauseTime: 3000,
         pauseOnHover: true,
         debug: false,
         axis: 'x',
-        slider: false,
-        cycle: false,
-        sliderFx: 'fade',
-        sliderFxArgs: {mode: 'show', easing: 'swing'},
-        sliderFxSpeed: 300,
-        overlayFx: 'slide',
-        overlayFxArgs: {direction: 'left', mode: 'show', easing: 'swing'},
-        overlayFxSpeed: 800,
+        carouselSpeed: 400,
+        sliderEffect: 'fade',
+        sliderArgs: {mode: 'show', easing: 'swing'},
+        sliderSpeed: 300,
+        overlayEffect: 'slide',
+        overlayArgs: {direction: 'left', mode: 'show', easing: 'swing'},
+        overlaySpeed: 800,
         afterCarouselNext: function() {},
         afterCarouselPrev: function() {},
         afterSliderNext: function() {},
