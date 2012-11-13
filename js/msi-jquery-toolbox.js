@@ -88,7 +88,7 @@
                 return;
             }
             if (this.options.cycle === false) {
-                return
+                return;
             }
 
             var self = this;
@@ -116,7 +116,7 @@
                 properties = {};
 
             self.l = self.ulChildrenLength - self.visibleLiLength + 1;
-            if (self.l < 1) self.l = 1;
+            if (self.l < 1) { self.l = 1; }
 
             direction = typeof direction !== 'undefined' ? direction : 'next';
 
@@ -238,7 +238,7 @@
 
             $newSliderLi.fadeIn(300, function() {
                 $oldSliderLi.hide();
-                $newSliderOverlay.hide();
+                $oldSliderOverlay.hide();
 
                 if ($newSliderOverlay.length) {
                     $newSliderOverlay.effect('slide', {direction: 'left', mode: 'show', easing: 'swing'}, 800, function() {
