@@ -32,7 +32,7 @@ if ( typeof Object.create !== 'function' ) {
 
             $.each(self.$sUl.children('li'), function(i, e) {
                 var $e = $(e);
-                $e.attr('data-sid', i);
+                $e.attr('data-id', i);
                 if (i !== 0) {
                     $e.css('z-index', 998).hide();
                 }
@@ -40,7 +40,7 @@ if ( typeof Object.create !== 'function' ) {
 
             $.each(self.$cUl.children('li'), function(i, e) {
                 var $e = $(e);
-                $e.attr('data-cid', i);
+                $e.attr('data-id', i);
             });
 
             self.ulChildrenLength = self.$cUl.children('li').length;
@@ -91,19 +91,21 @@ if ( typeof Object.create !== 'function' ) {
 
                 if (self.carouselCanSlide) {
                     self.$el.on('click', 'a.control', function(e) {
-                        self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
                         e.preventDefault();
+                        if (self.sliderReady && self.carouselReady) {
+                            self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
+                        }
                     });
                 }
 
                 if (self.options.slider) {
                     self.$el.on('click', 'ul.carousel li', function(e) {
-                        if (self.sliderReady) {
+                        e.preventDefault();
+                        if (self.sliderReady && self.carouselReady) {
                             self.clicked = true;
                             self.pause();
                             self.show($(this));
                         }
-                        e.preventDefault();
                     });
                 }
 
@@ -130,13 +132,16 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             if (self.carouselCanSlide) {
-                self.interval = setInterval($.proxy(self.slideFunc, self), self.options.pauseTime);
+                self.interval = setInterval(function() {
+                    self.sliderReady && self.carouselReady && self.slideFunc();
+                }, self.options.pauseTime);
                 return;
             }
 
             if (self.sliderCanSlide) {
                 self.interval = setInterval(function() {
-                    self.show(self.$cLiActive.next().length ? self.$cLiActive.next() : self.$cUl.children('li').first());
+                    var $cLi = self.$cLiActive.next().length ? self.$cLiActive.next() : self.$cUl.children('li').first();
+                    self.sliderReady && self.carouselReady && self.show($cLi);
                 }, self.options.pauseTime);
                 return;
             }
@@ -146,14 +151,6 @@ if ( typeof Object.create !== 'function' ) {
         {
             var self = this,
                 properties = {};
-
-            if (!self.carouselCanSlide) {
-                return;
-            }
-
-            if (!self.carouselReady) {
-                return;
-            }
 
             self.carouselReady = false;
 
@@ -201,14 +198,6 @@ if ( typeof Object.create !== 'function' ) {
                 $last = self.$cUl.children('li').last(),
                 properties = {};
 
-            if (!self.carouselCanSlide) {
-                return;
-            }
-
-            if (!self.carouselReady) {
-                return;
-            }
-
             self.carouselReady = false;
 
             direction = typeof direction !== 'undefined' ? direction : 'next';
@@ -250,40 +239,33 @@ if ( typeof Object.create !== 'function' ) {
             }
         },
 
-        show: function($cLiClicked)
+        show: function($cLiNew)
         {
             var self = this,
-                newId = $cLiClicked.data('cid'),
-                $oldSliderLi = self.$el.find('ul.slider > li.active'),
-                $newSliderLi = self.$el.find('ul.slider > li[data-sid='+newId+']'),
-                $newSliderOverlay = $newSliderLi.find('.overlay'),
-                $oldSliderOverlay = $oldSliderLi.find('.overlay');
+                newId = $cLiNew.data('id'),
+                $sLiOld = self.$sUl.children('li.active'),
+                $sLiNew = self.$sUl.children('li[data-id='+newId+']'),
+                $sOverlayOld = $sLiOld.find('.overlay'),
+                $sOverlayNew = $sLiNew.find('.overlay');
 
-            if ($oldSliderLi.data('sid') === newId) {
+            if ($sLiOld.data('id') === newId) {
                 return;
             }
-            if (!self.sliderReady) {
-                return;
-            }
-            if (!self.options.slider) {
-                return;
-            }
+
             self.sliderReady = false;
-            self.carouselReady = false;
 
-            $oldSliderLi.css('z-index', 998).removeClass('active');
-            $newSliderLi.css('z-index', 999).addClass('active');
-            $cLiClicked.addClass('active');
+            $sLiOld.css('z-index', 998).removeClass('active');
+            $sLiNew.css('z-index', 999).addClass('active');
+            $cLiNew.addClass('active');
             self.$cLiActive.removeClass('active');
+            self.$cLiActive = $cLiNew;
 
-            self.$cLiActive = $cLiClicked;
+            $sLiNew.effect(self.options.sliderEffect, self.options.sliderArgs, self.options.sliderSpeed, function() {
+                $sLiOld.hide();
+                $sOverlayOld.hide();
 
-            $newSliderLi.effect(self.options.sliderEffect, self.options.sliderArgs, self.options.sliderSpeed, function() {
-                $oldSliderLi.hide();
-                $oldSliderOverlay.hide();
-
-                if ($newSliderOverlay.length) {
-                    $newSliderOverlay.effect(self.options.overlayEffect, self.options.overlayArgs, self.options.overlaySpeed, function() {
+                if ($sOverlayNew.length) {
+                    $sOverlayNew.effect(self.options.overlayEffect, self.options.overlayArgs, self.options.overlaySpeed, function() {
                         self.sliderReady = true;
                         self.carouselReady = true;
                     });
