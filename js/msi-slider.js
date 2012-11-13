@@ -30,7 +30,7 @@
 
             self.visibleLiLength = Math.ceil(self.wrapDimension / self.liDimension);
             self.carouselCanSlide = self.ulChildrenLength <= self.visibleLiLength ? false : true;
-            self.sliderCanSlide = self.ulChildrenLength > 1 ? false : true;
+            self.sliderCanSlide = self.ulChildrenLength > 1 ? true : false;
 
             // set ul dimension
             self.$ul.css(self.options.axis === 'x' ? 'width' : 'height', self.liDimension * self.ulChildrenLength);
@@ -54,10 +54,12 @@
         {
             var self = this;
 
-            self.$el.on('click', 'a.control', function(e) {
-                self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
-                e.preventDefault();
-            });
+            if (self.carouselCanSlide) {
+                self.$el.on('click', 'a.control', function(e) {
+                    self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
+                    e.preventDefault();
+                });
+            }
 
             if (self.options.slider) {
                 self.$el.on('click', 'ul.carousel li', function(e) {
@@ -68,7 +70,7 @@
                 });
             }
 
-            if (self.options.pauseOnHover) {
+            if (self.options.cycle && self.options.pauseOnHover) {
                 self.$el.on('mouseenter', function() {
                     self.pause();
                 });
@@ -89,12 +91,16 @@
                 return;
             }
 
-            if (self.carouselCanSlide && self.options.carouselAuto) {
+            if (!self.options.cycle) {
+                return;
+            }
+
+            if (self.carouselCanSlide) {
                 self.interval = setInterval($.proxy(self.slideFunc, self), self.options.speed);
                 return;
             }
 
-            if (self.sliderCanSlide && self.options.sliderAuto) {
+            if (self.sliderCanSlide) {
                 self.interval = setInterval(function() {
                     self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
                 }, self.options.speed);
@@ -184,7 +190,7 @@
                     if (typeof self.options.afterCarouselNext === 'function') {
                         self.options.afterCarouselNext();
                     }
-                    if (self.options.slider && self.options.sliderAuto) {
+                    if (self.options.slider) {
                         self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
                     } else {
                         self.carouselReady = true;
@@ -200,7 +206,7 @@
                     if (typeof self.options.afterCarouselPrev === 'function') {
                         self.options.afterCarouselPrev();
                     }
-                    if (self.options.slider && self.options.sliderAuto) {
+                    if (self.options.slider) {
                         // cannot call method prev of undefined
                         self.show(self.$activeCarouselLi.prev().length ? self.$activeCarouselLi.prev() : self.$ul.children('li').last());
                     } else {
@@ -278,8 +284,7 @@
         debug: false,
         axis: 'x',
         slider: false,
-        carouselAuto: true,
-        sliderAuto: true,
+        cycle: false,
         sliderFx: 'fade',
         sliderFxArgs: {mode: 'show', easing: 'swing'},
         sliderFxSpeed: 300,
