@@ -224,9 +224,9 @@ if ( typeof Object.create !== 'function' ) {
         show: function($li)
         {
             var self = this,
-                newId = 'li'+$li.data('id'),
+                newId = $li.data('cid'),
                 $oldSliderLi = self.$el.find('ul.slider > li.active'),
-                $newSliderLi = self.$el.find('#'+newId),
+                $newSliderLi = self.$el.find('ul.slider > li[data-sid='+newId+']'),
                 $newSliderOverlay = $newSliderLi.find('.overlay'),
                 $oldSliderOverlay = $oldSliderLi.find('.overlay');
 
@@ -283,7 +283,7 @@ if ( typeof Object.create !== 'function' ) {
     };
 
     $.fn.msiSlider.options = {
-        infinite: false,
+        infinite: true,
         speed: 3000,
         pauseOnHover: true,
         debug: false,
