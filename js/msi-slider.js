@@ -1,17 +1,15 @@
-// Carouslider
-
 (function($, window, undefined) {
     "use strict";
 
-    var Carousel = {
+    var MsiSlider = {
         init: function(el, options) {
             var self = this;
 
             self.$el = $(el);
-            self.options = $.extend({}, $.fn.msicarousel.options, options);
+            self.options = $.extend({}, $.fn.msiSlider.options, options);
 
             self.$ul = self.$el.find('ul.carousel');
-            self.$currentCarouselLi = self.$ul.children('li').first();
+            self.$activeCarouselLi = self.$ul.children('li').first();
 
             self.ulChildrenLength = self.$ul.children('li').length;
             self.carouselReady = true;
@@ -20,7 +18,7 @@
             self.interval = 0;
             self.i = 1;
             self.position = self.options.axis === 'x' ? 'left' : 'top';
-            self.slideFunc = self.options.infinite === false ? self.slide : self.slideInfinitely;
+            self.slideFunc = !self.options.infinite ? self.slide : self.slideInfinitely;
 
             if (self.options.axis === 'x') {
                 self.liDimension = self.$ul.children('li').first().outerWidth(true);
@@ -31,7 +29,8 @@
             }
 
             self.visibleLiLength = Math.ceil(self.wrapDimension / self.liDimension);
-            self.canSlide = self.ulChildrenLength <= self.visibleLiLength ? false : true;
+            self.carouselCanSlide = self.ulChildrenLength <= self.visibleLiLength ? false : true;
+            self.sliderCanSlide = self.ulChildrenLength > 1 ? false : true;
 
             // set ul dimension
             self.$ul.css(self.options.axis === 'x' ? 'width' : 'height', self.liDimension * self.ulChildrenLength);
@@ -46,7 +45,7 @@
             self.listen();
             self.cycle();
 
-            if (this.options.debug === true) {
+            if (self.options.debug) {
                 self.debug();
             }
         },
@@ -60,7 +59,7 @@
                 e.preventDefault();
             });
 
-            if (self.options.slider === true) {
+            if (self.options.slider) {
                 self.$el.on('click', 'ul.carousel li', function(e) {
                     self.clicked = true;
                     self.pause();
@@ -69,7 +68,7 @@
                 });
             }
 
-            if (self.options.pauseOnHover === true && self.options.cycle === true) {
+            if (self.options.pauseOnHover) {
                 self.$el.on('mouseenter', function() {
                     self.pause();
                 });
@@ -84,36 +83,39 @@
         },
 
         cycle: function() {
-            if (this.clicked === true) {
-                return;
-            }
-            if (this.options.cycle === false) {
-                return;
-            }
-
             var self = this;
 
-            if (this.canSlide === true) {
-                this.interval = setInterval($.proxy(this.slideFunc, this), this.options.pauseTime);
-            } else {
-                this.interval = setInterval(function() {
-                    self.show(self.$currentCarouselLi.next().length ? self.$currentCarouselLi.next() : self.$ul.children('li').first());
-                }, this.options.pauseTime);
+            if (self.clicked) {
+                return;
+            }
+
+            if (self.carouselCanSlide && self.options.carouselAuto) {
+                self.interval = setInterval($.proxy(self.slideFunc, self), self.options.speed);
+                return;
+            }
+
+            if (self.sliderCanSlide && self.options.sliderAuto) {
+                self.interval = setInterval(function() {
+                    self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
+                }, self.options.speed);
+                return;
             }
         },
 
         slide: function(direction)
         {
-            if (this.canSlide === false) {
-                return;
-            }
-            if (this.carouselReady === false) {
-                return;
-            }
-            this.carouselReady = false;
-
             var self = this,
                 properties = {};
+
+            if (!self.carouselCanSlide) {
+                return;
+            }
+
+            if (!self.carouselReady) {
+                return;
+            }
+
+            self.carouselReady = false;
 
             self.l = self.ulChildrenLength - self.visibleLiLength + 1;
             if (self.l < 1) { self.l = 1; }
@@ -142,30 +144,32 @@
                 // ready
                 self.carouselReady = true;
                 // callback
-                if (direction === 'next' && typeof self.options.afterNext === 'function') {
-                    self.options.afterNext();
+                if (direction === 'next' && typeof self.options.afterCarouselNext === 'function') {
+                    self.options.afterCarouselNext();
                 }
                 // callback
-                if (direction === 'prev' && typeof self.options.afterPrev === 'function') {
-                    self.options.afterPrev();
+                if (direction === 'prev' && typeof self.options.afterCarouselPrev === 'function') {
+                    self.options.afterCarouselPrev();
                 }
             });
         },
 
         slideInfinitely: function(direction)
         {
-            if (this.canSlide === false) {
-                return;
-            }
-            if (this.carouselReady === false) {
-                return;
-            }
-            this.carouselReady = false;
-
             var self = this,
                 $first = self.$ul.children('li').first(),
                 $last = self.$ul.children('li').last(),
                 properties = {};
+
+            if (!self.carouselCanSlide) {
+                return;
+            }
+
+            if (!self.carouselReady) {
+                return;
+            }
+
+            self.carouselReady = false;
 
             direction = typeof direction !== 'undefined' ? direction : 'next';
 
@@ -177,11 +181,11 @@
                     // reposition the ul
                     self.$ul.css(self.position, -self.liDimension);
                     // callback
-                    if (typeof self.options.afterNext === 'function') {
-                        self.options.afterNext();
+                    if (typeof self.options.afterCarouselNext === 'function') {
+                        self.options.afterCarouselNext();
                     }
-                    if (self.options.slider === true) {
-                        self.show(self.$currentCarouselLi.next().length ? self.$currentCarouselLi.next() : self.$ul.children('li').first());
+                    if (self.options.slider && self.options.sliderAuto) {
+                        self.show(self.$activeCarouselLi.next().length ? self.$activeCarouselLi.next() : self.$ul.children('li').first());
                     } else {
                         self.carouselReady = true;
                     }
@@ -193,11 +197,12 @@
                     // reposition the ul
                     self.$ul.css(self.position, -self.liDimension);
                     // callback
-                    if (typeof self.options.afterPrev === 'function') {
-                        self.options.afterPrev();
+                    if (typeof self.options.afterCarouselPrev === 'function') {
+                        self.options.afterCarouselPrev();
                     }
-                    if (self.options.slider === true) {
-                        self.show(self.$currentCarouselLi.prev().length ? self.$activeLi.prev() : self.$ul.children('li').last());
+                    if (self.options.slider && self.options.sliderAuto) {
+                        // cannot call method prev of undefined
+                        self.show(self.$activeCarouselLi.prev().length ? self.$activeCarouselLi.prev() : self.$ul.children('li').last());
                     } else {
                         self.carouselReady = true;
                     }
@@ -217,31 +222,28 @@
             if ($oldSliderLi.attr('id') === newId) {
                 return;
             }
-            if (this.carouselReady === false) {
+            if (!self.sliderReady) {
                 return;
             }
-            if (this.sliderReady === false) {
+            if (!self.options.slider) {
                 return;
             }
-            if (this.options.slider === false) {
-                return;
-            }
-            this.sliderReady = false;
-            this.carouselReady = false;
+            self.sliderReady = false;
+            self.carouselReady = false;
 
             $oldSliderLi.css('z-index', 998).removeClass('active');
             $newSliderLi.css('z-index', 999).addClass('active');
             $li.addClass('active');
-            self.$currentCarouselLi.removeClass('active');
+            self.$activeCarouselLi.removeClass('active');
 
-            self.$currentCarouselLi = $li;
+            self.$activeCarouselLi = $li;
 
-            $newSliderLi.fadeIn(300, function() {
+            $newSliderLi.effect(self.options.sliderFx, self.options.sliderFxArgs, self.options.sliderFxSpeed, function() {
                 $oldSliderLi.hide();
                 $oldSliderOverlay.hide();
 
                 if ($newSliderOverlay.length) {
-                    $newSliderOverlay.effect('slide', {direction: 'left', mode: 'show', easing: 'swing'}, 800, function() {
+                    $newSliderOverlay.effect(self.options.overlayFx, self.options.overlayFxArgs, self.options.overlayFxSpeed, function() {
                         self.sliderReady = true;
                         self.carouselReady = true;
                     });
@@ -254,7 +256,7 @@
 
         debug: function() {
             console.log('element: '+this.$el.attr('id'));
-            console.log('canSlide: '+this.canSlide);
+            console.log('carouselCanSlide: '+this.carouselCanSlide);
             console.log('wrap dimension: '+this.wrapDimension+'px');
             console.log('li dimension: '+this.liDimension+'px');
             console.log('number of li: '+this.ulChildrenLength);
@@ -262,22 +264,31 @@
         }
     };
 
-    $.fn.msicarousel = function(options) {
+    $.fn.msiSlider = function(options) {
         return this.each(function() {
-            var carousel = Object.create(Carousel);
-            carousel.init(this, options);
+            var msiSlider = Object.create(MsiSlider);
+            msiSlider.init(this, options);
         });
     };
 
-    $.fn.msicarousel.options = {
+    $.fn.msiSlider.options = {
         infinite: false,
-        pauseTime: 3000,
+        speed: 3000,
         pauseOnHover: true,
         debug: false,
         axis: 'x',
-        cycle: false,
         slider: false,
-        afterNext: function() {},
-        afterPrev: function() {}
+        carouselAuto: true,
+        sliderAuto: true,
+        sliderFx: 'fade',
+        sliderFxArgs: {mode: 'show', easing: 'swing'},
+        sliderFxSpeed: 300,
+        overlayFx: 'slide',
+        overlayFxArgs: {direction: 'left', mode: 'show', easing: 'swing'},
+        overlayFxSpeed: 800,
+        afterCarouselNext: function() {},
+        afterCarouselPrev: function() {},
+        afterSliderNext: function() {},
+        afterSliderPrev: function() {}
     };
 })(jQuery, window);
