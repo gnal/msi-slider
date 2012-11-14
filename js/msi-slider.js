@@ -75,6 +75,7 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             self.listen();
+            self.options.cycle && self.cycle();
 
             if (self.options.debug) {
                 self.debug();
@@ -85,39 +86,34 @@ if ( typeof Object.create !== 'function' ) {
         {
             var self = this;
 
-            $(window).on('load', function() {
-                self.$el.css('visibility', 'visible');
-                self.options.cycle && self.cycle();
+            if (self.carouselCanSlide) {
+                self.$el.on('click', 'a.control', function(e) {
+                    e.preventDefault();
+                    if (self.sliderReady && self.carouselReady) {
+                        self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
+                    }
+                });
+            }
 
-                if (self.carouselCanSlide) {
-                    self.$el.on('click', 'a.control', function(e) {
-                        e.preventDefault();
-                        if (self.sliderReady && self.carouselReady) {
-                            self.slideFunc($(this).data('direction') === 'next' ? 'next' : 'prev');
-                        }
-                    });
-                }
-
-                if (self.options.slider) {
-                    self.$el.on('click', 'ul.carousel li', function(e) {
-                        e.preventDefault();
-                        if (self.sliderReady && self.carouselReady) {
-                            self.clicked = true;
-                            self.pause();
-                            self.show($(this));
-                        }
-                    });
-                }
-
-                if (self.options.cycle && self.options.pauseOnHover) {
-                    self.$el.on('mouseenter', function() {
+            if (self.options.slider) {
+                self.$el.on('click', 'ul.carousel li', function(e) {
+                    e.preventDefault();
+                    if (self.sliderReady && self.carouselReady) {
+                        self.clicked = true;
                         self.pause();
-                    });
-                    self.$el.on('mouseleave', function() {
-                        self.cycle();
-                    });
-                }
-            });
+                        self.show($(this));
+                    }
+                });
+            }
+
+            if (self.options.cycle && self.options.pauseOnHover) {
+                self.$el.on('mouseenter', function() {
+                    self.pause();
+                });
+                self.$el.on('mouseleave', function() {
+                    self.cycle();
+                });
+            }
         },
 
         pause: function() {
