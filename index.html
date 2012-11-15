@@ -11,10 +11,6 @@
                 padding-top: 40px;
             }
 
-            #slider {
-                visibility: hidden;
-            }
-
             #slider ul.slider {
                 position: relative;
                 height: 340px;
@@ -66,29 +62,27 @@
                     <li><img src="http://placehold.it/940x340/E8117F/FFFFFF" alt="0"></li>
                     <li><img src="http://placehold.it/940x340/000000/FFFFFF" alt="0"></li>
                     <li><img src="http://placehold.it/940x340" alt="0"></li>
-                    <li><img src="http://placehold.it/940x340/E8117F/FFFFFF" alt="0"></li>
                 </ul>
                 <div class="carousel-wrap">
                     <ul class="unstyled carousel">
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34" alt="0"></li>
-                        <li><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/E8117F/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34/000000/FFFFFF" alt="0"></a></li>
+                        <li><a href="#"><img src="http://placehold.it/94x34" alt="0"></a></li>
                     </ul>
                 </div>
                 <div style="text-align:center;">
@@ -102,11 +96,13 @@
         <script src="/js/msi-slider.js"></script>
         <script>
             $('#slider').msiSlider({
-                pauseTime: 2000,
-                carouselSpeed: 400,
+                pauseTime: 1500,
+                carouselSpeed: 500,
                 sliderSpeed: 1000,
+                cycle: true,
+                slider: true,
                 sliderEffect: 'slide',
-                sliderArgs: {direction: 'up', mode: 'show', easing: 'easeOutBounce'},
+                sliderArgs: {direction: 'up', mode: 'show', easing: 'swing'},
             });
         </script>
     </body>
