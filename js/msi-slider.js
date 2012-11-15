@@ -165,49 +165,39 @@ if ( typeof Object.create !== 'function' ) {
             return this.carouselReady;
         },
 
-        // slide: function(direction)
-        // {
-        //     this.carouselReady = false;
+        slide: function(direction)
+        {
+            var self = this,
+                properties = {};
 
-        //     var self = this,
-        //         properties = {};
+            self.carouselReady = false;
 
-        //     self.l = self.count - self.maxVisible + 1;
-        //     if (self.l < 1) { self.l = 1; }
+            self.l = self.count - self.maxVisible + 1;
+            if (self.l < 1) { self.l = 1; }
 
-        //     direction = typeof direction !== 'undefined' ? direction : 'next';
+            if (direction === 'next') {
+                if (self.i === self.l) {
+                    properties[self.position] = 0;
+                    self.i = 1;
+                } else {
+                    properties[self.position] = '-'+self.carouselLiDimension * self.i;
+                    self.i++;
+                }
+            } else {
+                if (self.i === 1) {
+                    self.i = self.l;
+                    properties[self.position] = '-'+self.carouselLiDimension * (self.l - 1);
+                } else {
+                    self.i--;
+                    properties[self.position] = '-'+self.carouselLiDimension * (self.i - 1);
+                }
+            }
 
-        //     if (direction === 'next') {
-        //         if (self.i === self.l) {
-        //             properties[self.position] = 0;
-        //             self.i = 1;
-        //         } else {
-        //             properties[self.position] = '-'+self.carouselLiDimension * self.i;
-        //             self.i++;
-        //         }
-        //     } else {
-        //         if (self.i === 1) {
-        //             self.i = self.l;
-        //             properties[self.position] = '-'+self.carouselLiDimension * (self.l - 1);
-        //         } else {
-        //             self.i--;
-        //             properties[self.position] = '-'+self.carouselLiDimension * (self.i - 1);
-        //         }
-        //     }
-
-        //     self.$carousel.animate(properties, function() {
-        //         // ready
-        //         self.carouselReady = true;
-        //         // callback
-        //         if (direction === 'next' && typeof self.options.afterCarouselNext === 'function') {
-        //             self.options.afterCarouselNext();
-        //         }
-        //         // callback
-        //         if (direction === 'prev' && typeof self.options.afterCarouselPrev === 'function') {
-        //             self.options.afterCarouselPrev();
-        //         }
-        //     });
-        // },
+            self.$carousel.animate(properties, function() {
+                direction === 'next' ? self.options.afterNext() : self.options.afterPrev();
+                self.carouselReady = true;
+            });
+        },
 
         slideInfinitely: function(direction)
         {
