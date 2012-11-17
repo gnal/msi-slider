@@ -68,6 +68,7 @@ if ( typeof Object.create !== 'function' ) {
                     $e.attr('data-id', i);
                     if (i !== 0) {
                         $e.css('z-index', 998).hide();
+                        $e.find('.overlay').hide();
                     }
                 });
 
@@ -255,7 +256,7 @@ if ( typeof Object.create !== 'function' ) {
             $carouselLi.addClass('active');
             self.$activeCarouselLi.removeClass('active');
 
-            $sliderLi.effect(self.options.sliderEffect, self.options.sliderArgs, self.options.sliderSpeed, function() {
+            $sliderLi.effect(self.options.slideEffect, self.options.slideProperties, self.options.slideSpeed, function() {
                 self.$activeSliderLi.hide();
                 self.$activeSliderLi.find('.overlay').hide();
 
@@ -273,7 +274,7 @@ if ( typeof Object.create !== 'function' ) {
                 if ($sliderLi.find('.overlay').length) {
                     $sliderLi.find('.overlay').effect(
                         self.options.overlayEffect,
-                        self.options.overlayArgs,
+                        self.options.overlayProperties,
                         self.options.overlaySpeed,
                         callback
                     );
@@ -300,11 +301,11 @@ if ( typeof Object.create !== 'function' ) {
         debug: false,
         axis: 'x',
         carouselSpeed: 400,
-        sliderEffect: 'fade',
-        sliderArgs: {mode: 'show', easing: 'swing'},
-        sliderSpeed: 300,
+        slideEffect: 'fade',
+        slideProperties: {mode: 'show', easing: 'swing'},
+        slideSpeed: 300,
         overlayEffect: 'slide',
-        overlayArgs: {direction: 'left', mode: 'show', easing: 'swing'},
+        overlayProperties: {direction: 'left', mode: 'show', easing: 'swing'},
         overlaySpeed: 800,
         afterNext: function() {},
         afterPrev: function() {}
