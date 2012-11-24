@@ -92,18 +92,34 @@ if ( typeof Object.create !== 'function' ) {
         {
             var self = this;
 
-            if (self.carouselCanSlide) {
-                self.$el.on('click', 'a.control', function(e) {
-                    e.preventDefault();
-                    if (!self.ready()) return;
-                    var direction = $(this).data('direction') === 'next' ? 'next' : 'prev';
+            self.$el.on('click', 'a.control', function(e) {
+                e.preventDefault();
+                if (!self.ready()) return;
+                var direction = $(this).data('direction') === 'next' ? 'next' : 'prev';
+                if (self.carouselCanSlide) {
                     if (self.options.infinite) {
                         self.slideInfinitely(direction);
                     } else {
                         self.slide(direction);
                     }
-                });
-            }
+                } else {
+                    self.clicked = true;
+                    self.pause();
+                    self.show(direction);
+                }
+            });
+
+            self.$el.on('click', 'a.play', function(e) {
+                e.preventDefault();
+                self.clicked = false;
+                self.cycle();
+            });
+
+            self.$el.on('click', 'a.pause', function(e) {
+                e.preventDefault();
+                self.clicked = true;
+                self.pause();
+            });
 
             if (self.options.slider) {
                 self.$el.on('click', 'ul.carousel li a', function(e) {
@@ -298,7 +314,6 @@ if ( typeof Object.create !== 'function' ) {
         cycle: true,
         pauseTime: 3000,
         pauseOnHover: true,
-        debug: false,
         axis: 'x',
         carouselSpeed: 400,
         slideEffect: 'fade',
