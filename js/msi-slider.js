@@ -94,6 +94,8 @@ if ( typeof Object.create !== 'function' ) {
 
             self.$el.on('click', 'a.control', function(e) {
                 e.preventDefault();
+                self.clicked = true;
+                self.pause();
                 if (!self.ready()) return;
                 var direction = $(this).data('direction') === 'next' ? 'next' : 'prev';
                 if (self.carouselCanSlide) {
@@ -103,8 +105,6 @@ if ( typeof Object.create !== 'function' ) {
                         self.slide(direction);
                     }
                 } else {
-                    self.clicked = true;
-                    self.pause();
                     self.show(direction);
                 }
             });
