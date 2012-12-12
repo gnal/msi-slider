@@ -17,11 +17,14 @@ if ( typeof Object.create !== 'function' ) {
             self.$carousel = self.$el.find('ul.carousel');
             self.options = $.extend({}, $.fn.msiSlider.options, options);
 
+            if (typeof self.options.carouselLiDimension === 'undefined') {
+                alert('MsiSlider: the option carouselLiDimension must be set. You must calculate padding, margin and border.');
+                return;
+            }
+
             if (self.options.axis === 'x') {
-                self.carouselLiDimension = self.$carousel.children('li').first().outerWidth(true);
                 self.carouselWrapDimension = self.$carousel.closest('div').width();
             } else {
-                self.carouselLiDimension = self.$carousel.children('li').first().outerHeight(true);
                 self.carouselWrapDimension = self.$carousel.closest('div').height();
             }
 
@@ -33,7 +36,7 @@ if ( typeof Object.create !== 'function' ) {
             self.carouselReady = true;
             self.count = self.$carousel.children('li').length;
             self.position = self.options.axis === 'x' ? 'left' : 'top';
-            self.maxVisible = Math.ceil(self.carouselWrapDimension / self.carouselLiDimension);
+            self.maxVisible = Math.ceil(self.carouselWrapDimension / self.options.carouselLiDimension);
             self.carouselCanSlide = self.count > self.maxVisible ? true : false;
 
             if (self.options.slider) {
@@ -79,11 +82,11 @@ if ( typeof Object.create !== 'function' ) {
             }
 
             // set ul dimension
-            self.$carousel.css(self.options.axis === 'x' ? 'width' : 'height', self.carouselLiDimension * self.count);
+            self.$carousel.css(self.options.axis === 'x' ? 'width' : 'height', self.options.carouselLiDimension * self.count);
 
             // set starting position of first slide
             if (self.options.infinite && self.carouselCanSlide) {
-                self.$carousel.css(self.position, -self.carouselLiDimension);
+                self.$carousel.css(self.position, -self.options.carouselLiDimension);
                 self.$carousel.children('li').last().insertBefore(self.$carousel.children('li').first());
             }
         },
@@ -197,16 +200,16 @@ if ( typeof Object.create !== 'function' ) {
                     properties[self.position] = 0;
                     self.i = 1;
                 } else {
-                    properties[self.position] = '-'+self.carouselLiDimension * self.i;
+                    properties[self.position] = '-'+self.options.carouselLiDimension * self.i;
                     self.i++;
                 }
             } else {
                 if (self.i === 1) {
                     self.i = self.l;
-                    properties[self.position] = '-'+self.carouselLiDimension * (self.l - 1);
+                    properties[self.position] = '-'+self.options.carouselLiDimension * (self.l - 1);
                 } else {
                     self.i--;
-                    properties[self.position] = '-'+self.carouselLiDimension * (self.i - 1);
+                    properties[self.position] = '-'+self.options.carouselLiDimension * (self.i - 1);
                 }
             }
 
@@ -226,10 +229,10 @@ if ( typeof Object.create !== 'function' ) {
             self.carouselReady = false;
 
             if (direction === 'next') {
-                properties[self.position] = '-'+self.carouselLiDimension * 2;
+                properties[self.position] = '-'+self.options.carouselLiDimension * 2;
                 self.$carousel.animate(properties, self.options.carouselSpeed, function() {
                     $first.insertAfter($last);
-                    self.$carousel.css(self.position, -self.carouselLiDimension);
+                    self.$carousel.css(self.position, -self.options.carouselLiDimension);
                     self.options.slider ? self.show('next') : self.options.afterNext();
                     self.carouselReady = true;
                 });
@@ -237,7 +240,7 @@ if ( typeof Object.create !== 'function' ) {
                 properties[self.position] = 0;
                 self.$carousel.animate(properties, self.options.carouselSpeed, function() {
                     $last.insertBefore($first);
-                    self.$carousel.css(self.position, -self.carouselLiDimension);
+                    self.$carousel.css(self.position, -self.options.carouselLiDimension);
                     self.options.slider ? self.show('prev') : self.options.afterPrev();
                     self.carouselReady = true;
                 });
