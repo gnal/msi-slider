@@ -18,7 +18,7 @@ if ( typeof Object.create !== 'function' ) {
             self.options = $.extend({}, $.fn.msiSlider.options, options);
 
             if (typeof self.options.carouselLiDimension === 'undefined') {
-                alert('MsiSlider: the option carouselLiDimension must be set. You must calculate padding, margin and border.');
+                console.log('MsiSlider: the option carouselLiDimension must be set. You must calculate padding, margin and border.');
                 return;
             }
 
